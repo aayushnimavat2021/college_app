@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-class FestivalScreen extends StatefulWidget {
+class CollegeEventScreen extends StatefulWidget {
   final String role;
 
-  const FestivalScreen({super.key, required this.role});
+  const CollegeEventScreen({super.key, required this.role});
 
   @override
-  State<FestivalScreen> createState() => _FestivalScreenState();
+  State<CollegeEventScreen> createState() => _CollegeEventScreenState();
 }
 
-class _FestivalScreenState extends State<FestivalScreen> {
+class _CollegeEventScreenState extends State<CollegeEventScreen> {
 
   final nameController = TextEditingController();
   final dateController = TextEditingController();
+  final timeController = TextEditingController();
+  final venueController = TextEditingController();
   final descController = TextEditingController();
-  final typeController = TextEditingController();
 
   final DatabaseReference dbRef =
-  FirebaseDatabase.instance.ref("festivals");
+  FirebaseDatabase.instance.ref("college_events");
 
   bool isLoading = false;
 
-  Future<void> addFestival() async {
+  Future<void> addEvent() async {
     String name = nameController.text.trim();
     String date = dateController.text.trim();
+    String time = timeController.text.trim();
+    String venue = venueController.text.trim();
     String desc = descController.text.trim();
-    String type = typeController.text.trim();
 
-    if (name.isEmpty || date.isEmpty) {
+    if (name.isEmpty || date.isEmpty || time.isEmpty || venue.isEmpty) {
       _showSnack("Fill required fields");
       return;
     }
@@ -39,17 +41,19 @@ class _FestivalScreenState extends State<FestivalScreen> {
       await dbRef.push().set({
         "name": name,
         "date": date,
+        "time": time,
+        "venue": venue,
         "description": desc,
-        "type": type,
         "createdAt": DateTime.now().toString(),
       });
 
       nameController.clear();
       dateController.clear();
+      timeController.clear();
+      venueController.clear();
       descController.clear();
-      typeController.clear();
 
-      _showSnack("🎉 Festival Added");
+      _showSnack("🎓 Event Added");
     } catch (e) {
       _showSnack("❌ Error");
     } finally {
@@ -70,7 +74,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
       backgroundColor: Colors.white,
 
       appBar: AppBar(
-        title: const Text("Festivals"),
+        title: const Text("College Events"),
         centerTitle: true,
         backgroundColor: Colors.blue,
       ),
@@ -85,22 +89,25 @@ class _FestivalScreenState extends State<FestivalScreen> {
 
             // 🔷 HEADER ICON
             const Icon(
-              Icons.celebration,
+              Icons.event,
               size: 60,
               color: Colors.blue,
             ),
 
             const SizedBox(height: 20),
 
-            // 🔹 ADMIN FORM (MATCHED STYLE)
+            // 🔹 ADMIN FORM
             if (isAdmin) ...[
-              _inputField(nameController, "Festival Name"),
+              _inputField(nameController, "Event Name"),
               const SizedBox(height: 15),
 
               _inputField(dateController, "Date (DD/MM/YYYY)"),
               const SizedBox(height: 15),
 
-              _inputField(typeController, "Type"),
+              _inputField(timeController, "Time (10:00 AM)"),
+              const SizedBox(height: 15),
+
+              _inputField(venueController, "Venue"),
               const SizedBox(height: 15),
 
               _inputField(descController, "Description"),
@@ -110,7 +117,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: isLoading ? null : addFestival,
+                  onPressed: isLoading ? null : addEvent,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -121,7 +128,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                       ? const CircularProgressIndicator(
                       color: Colors.white)
                       : const Text(
-                    "Add Festival",
+                    "Add Event",
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
@@ -130,7 +137,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
               const SizedBox(height: 25),
             ],
 
-            // 🔥 FESTIVAL LIST
+            // 🔥 EVENT LIST
             Expanded(
               child: StreamBuilder(
                 stream: dbRef.onValue,
@@ -139,20 +146,20 @@ class _FestivalScreenState extends State<FestivalScreen> {
                   if (!snapshot.hasData ||
                       snapshot.data!.snapshot.value == null) {
                     return const Center(
-                        child: Text("No festivals found"));
+                        child: Text("No events found"));
                   }
 
                   Map data =
                   snapshot.data!.snapshot.value as Map;
 
-                  List festivals =
+                  List events =
                   data.values.toList().reversed.toList();
 
                   return ListView.builder(
-                    itemCount: festivals.length,
+                    itemCount: events.length,
                     itemBuilder: (context, index) {
 
-                      final fest = festivals[index];
+                      final event = events[index];
 
                       return Container(
                         margin:
@@ -176,7 +183,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                         child: Row(
                           children: [
 
-                            // 🎉 ICON
+                            // 🎓 ICON
                             Container(
                               padding:
                               const EdgeInsets.all(12),
@@ -187,7 +194,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                                 BorderRadius.circular(10),
                               ),
                               child: const Icon(
-                                Icons.celebration,
+                                Icons.event,
                                 color: Colors.blue,
                               ),
                             ),
@@ -202,7 +209,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                                 children: [
 
                                   Text(
-                                    fest['name'] ?? '',
+                                    event['name'] ?? '',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight:
@@ -213,27 +220,33 @@ class _FestivalScreenState extends State<FestivalScreen> {
                                   const SizedBox(height: 6),
 
                                   Text(
-                                    "📅 ${fest['date'] ?? ''}",
+                                    "📅 ${event['date'] ?? ''}",
                                     style: TextStyle(
                                       color:
                                       Colors.grey[700],
                                     ),
                                   ),
 
-                                  if ((fest['type'] ?? '')
-                                      .isNotEmpty)
-                                    Text(
-                                      "🏷 ${fest['type']}",
-                                      style: TextStyle(
-                                        color:
-                                        Colors.grey[600],
-                                      ),
+                                  Text(
+                                    "⏰ ${event['time'] ?? ''}",
+                                    style: TextStyle(
+                                      color:
+                                      Colors.grey[700],
                                     ),
+                                  ),
 
-                                  if ((fest['description'] ?? '')
+                                  Text(
+                                    "📍 ${event['venue'] ?? ''}",
+                                    style: TextStyle(
+                                      color:
+                                      Colors.grey[700],
+                                    ),
+                                  ),
+
+                                  if ((event['description'] ?? '')
                                       .isNotEmpty)
                                     Text(
-                                      fest['description'],
+                                      event['description'],
                                       style: TextStyle(
                                         color:
                                         Colors.grey[600],

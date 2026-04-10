@@ -1,3 +1,4 @@
+import 'package:college_app/screens/college_event_screen.dart';
 import 'package:flutter/material.dart';
 import 'event_screen.dart';
 import 'login_screen.dart';
@@ -28,17 +29,31 @@ class GoalSelectionScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.settings, color: Colors.black),
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoginScreen(),
-                ),
-                    (route) => false, // removes all previous screens
-              );
+            onSelected: (value) {
+              if (value == "logout") {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                      (route) => false,
+                );
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: "logout",
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, color: Colors.black),
+                    SizedBox(width: 10),
+                    Text("Logout"),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -68,10 +83,10 @@ class GoalSelectionScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 children: [
-                  _buildCard(context, "Upcoming Exams", Icons.school,EventScreen(role: role,)),
-                  _buildCard(context, "Department Event", Icons.apartment,ExamScreen(role: role,)),
-                  _buildCard(context, "Festival Event", Icons.celebration,ExamScreen(role: role,)),
-                  _buildCard(context, "College Event", Icons.event,ExamScreen(role: role,)),
+                  _buildCard(context, "Upcoming Exams", Icons.school,ExamScreen(role: role,)),
+                  _buildCard(context, "Department Event", Icons.apartment,EventScreen(role: role,)),
+                  _buildCard(context, "Festival Event", Icons.celebration,FestivalScreen(role: role,)),
+                  _buildCard(context, "College Event", Icons.event,CollegeEventScreen(role: role,)),
                 ],
               ),
             ),
@@ -80,20 +95,20 @@ class GoalSelectionScreen extends StatelessWidget {
       ),
 
       // 🔹 ADMIN BUTTON
-      floatingActionButton: role == "Admin"
-          ? FloatingActionButton(
-        backgroundColor: Colors.deepPurple,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EventScreen(role: role),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      )
-          : null,
+      // floatingActionButton: role == "Admin"
+      //     ? FloatingActionButton(
+      //   backgroundColor: Colors.deepPurple,
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => EventScreen(role: role),
+      //       ),
+      //     );
+      //   },
+      //   child: const Icon(Icons.add),
+      // )
+      //     : null,
     );
   }
 

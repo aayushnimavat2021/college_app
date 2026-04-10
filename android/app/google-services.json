@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "705826828670",
+    "firebase_url": "https://college-app-4e37b-default-rtdb.firebaseio.com",
     "project_id": "college-app-4e37b",
     "storage_bucket": "college-app-4e37b.firebasestorage.app"
   },
@@ -10,25 +11,6 @@
         "mobilesdk_app_id": "1:705826828670:android:b9c692a82f9ecfdc41432f",
         "android_client_info": {
           "package_name": "com.example.college_app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAyYgXeBJ1jKjoYwmUd_aeDTb7NSPOmGs0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:705826828670:android:48604afd8835299141432f",
-        "android_client_info": {
-          "package_name": "com.example.myapplication1"
         }
       },
       "oauth_client": [],

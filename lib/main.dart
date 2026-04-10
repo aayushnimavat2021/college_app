@@ -7,11 +7,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "college-app",
+      apiKey: "AIzaSyAyYgXeBJ1jKjoYwmUd_aeDTb7NSPOmGs0",
       appId: "1:705826828670:android:b9c692a82f9ecfdc41432f",
-      messagingSenderId: "YOUR_SENDER_ID",
+      messagingSenderId: "705826828670",
       projectId: "college-app-4e37b",
-        databaseURL: "https://college-app-4e37b-default-rtdb.firebaseio.com"
+      databaseURL: "https://college-app-4e37b-default-rtdb.firebaseio.com",
     ),
   );
   print("Firebase Initialized");

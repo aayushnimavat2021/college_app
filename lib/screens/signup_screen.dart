@@ -2,21 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-import 'signup_screen.dart';
-import 'package:college_app/screens/goal_selection_screen.dart';
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+  String role = "Student";
   bool isLoading = false;
 
   bool isValidEmail(String email) {
@@ -24,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
         .hasMatch(email);
   }
 
-  Future<void> login() async {
+  Future<void> signup() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -47,32 +45,27 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = true);
 
     try {
-      // 🔥 Firebase Login
+      // 🔥 Create user
       UserCredential userCred = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
+          .createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       String uid = userCred.user!.uid;
 
-      // 🔥 Fetch Role
-      final snapshot = await FirebaseDatabase.instance
-          .ref("users/$uid/role")
-          .get();
+      // 🔥 Save role
+      await FirebaseDatabase.instance.ref("users/$uid").set({
+        "email": email,
+        "role": role,
+      });
 
-      String role = snapshot.value?.toString() ?? "Student";
+      _showSnack("✅ Account Created");
 
-      // 🚀 Navigate
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => GoalSelectionScreen(role: role),
-        ),
-      );
+      Navigator.pop(context);
 
     } catch (e) {
-      _showSnack("❌ Login Failed");
+      _showSnack("❌ Signup Failed");
     } finally {
       setState(() => isLoading = false);
     }
@@ -109,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // 🔤 Title
                 const Text(
-                  "Login",
+                  "Signup",
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -118,23 +111,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 30),
 
-                // 📧 Email Field
+                // 📧 Email
                 _inputField(emailController, "Email"),
 
                 const SizedBox(height: 15),
 
-                // 🔒 Password Field
+                // 🔒 Password
                 _inputField(passwordController, "Password",
                     isPassword: true),
 
+                const SizedBox(height: 15),
+
+                // 🎭 Role Dropdown (Styled like login)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButton<String>(
+                    value: role,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    items: ["Student", "Admin"]
+                        .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                    ))
+                        .toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        role = val!;
+                      });
+                    },
+                  ),
+                ),
+
                 const SizedBox(height: 25),
 
-                // 🔘 Login Button
+                // 🔘 Signup Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : login,
+                    onPressed: isLoading ? null : signup,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
@@ -146,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.white,
                     )
                         : const Text(
-                      "Login",
+                      "Signup",
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
@@ -154,17 +174,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // 🔗 Signup Link
+                // 🔙 Back to Login
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SignupScreen(),
-                      ),
-                    );
+                    Navigator.pop(context);
                   },
-                  child: const Text("New User? Signup"),
+                  child: const Text("Already have an account? Login"),
                 ),
               ],
             ),
@@ -174,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // 🔹 Common Input Field
+  // 🔹 Reusable Input Field
   Widget _inputField(TextEditingController controller, String label,
       {bool isPassword = false}) {
     return TextField(
